@@ -1,0 +1,15 @@
+from functools import wraps
+from flask_jwt_extended import get_jwt_identity
+from app.models.user import User
+from app.utils.response import forbidden
+
+
+def admin_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user or user.role != 1:
+            return forbidden('需要管理员权限')
+        return fn(*args, **kwargs)
+    return wrapper
